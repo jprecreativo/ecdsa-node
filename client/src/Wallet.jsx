@@ -5,10 +5,14 @@ import { toHex } from "ethereum-cryptography/utils";
 
 function Wallet({ address, setAddress, balance, setBalance, privateKey, setPrivateKey }) {
   async function onChange(evt) {
-    privateKey = evt.target.value;
+    const hexRegex = /^[a-fA-F0-9]{64}$/;
+
+    // Replace all values that not match with hexadecimal pattern.
+    privateKey = (evt.target.value).replace(/[^a-fA-F0-9]/g, "");
     setPrivateKey(privateKey);
-    // Check if privateKey is 32 bytes (64 characters) long.
-    if (privateKey.length === 64) {
+
+    // Check if privateKey is 32 bytes (64 characters) long and is hexadecimal.
+    if (hexRegex.test(privateKey)) {
       const publicKey = secp.getPublicKey(privateKey);
       const keccakPublicKey = keccak256(publicKey.slice(1)).slice(-20);
       address = toHex(keccakPublicKey);
@@ -32,7 +36,7 @@ function Wallet({ address, setAddress, balance, setBalance, privateKey, setPriva
 
       <label>
         Private key
-        <input placeholder="Type in a private key" value={privateKey} onChange={onChange}></input>
+        <input placeholder="Type in a private key" maxLength={64} value={privateKey} onChange={onChange}></input>
       </label>
 
       <div className="balance">Balance: {balance}</div>
